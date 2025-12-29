@@ -1,3 +1,17 @@
+enable_crb_or_epel() {
+    # Try to enable CRB (CodeReady Builder) or EPEL for ninja-build
+    if command -v dnf >/dev/null 2>&1; then
+        if ! dnf repolist enabled | grep -qE '^crb'; then
+            log_info "尝试启用 CRB (CodeReady Builder) 软件源..."
+            sudo_cmd dnf config-manager --set-enabled crb || true
+        fi
+    fi
+    if ! rpm -q epel-release >/dev/null 2>&1; then
+        log_info "尝试安装 EPEL 软件源..."
+        sudo_cmd $PKG_MANAGER install -y epel-release || true
+    fi
+    pkg_makecache
+}
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -115,8 +129,7 @@ EOF_PIPX
 install_cpp_toolchain() {
     show_step "安装 C/C++ 工具链"
 
-    pkg_makecache
-
+    enable_crb_or_epel
     log_info "安装常用构建工具..."
     pkg_install \
         gcc gcc-c++ make cmake ninja-build \
@@ -125,7 +138,6 @@ install_cpp_toolchain() {
         pkgconf-pkg-config \
         openssl-devel zlib-devel libcurl-devel \
         ca-certificates curl || log_warning "构建工具安装可能失败"
-
     log_success "C/C++ 工具链安装完成"
 }
 

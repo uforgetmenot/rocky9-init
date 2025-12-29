@@ -113,15 +113,14 @@ install_docker() {
     pkg_makecache
 
     log_info "尝试从系统仓库安装 Docker（若失败将尝试添加 Docker CE 官方仓库）..."
-    if pkg_install docker docker-compose-plugin; then
-        :
-    elif pkg_install docker docker-compose; then
-        :
-    elif pkg_install docker-engine docker-compose; then
-        :
-    elif pkg_install moby-engine moby-cli containerd; then
-        :
-    else
+    local need_fallback=0
+    pkg_install docker docker-compose-plugin || need_fallback=1
+    # Check if both docker and docker-compose-plugin are installed
+    if ! command -v docker &>/dev/null; then need_fallback=1; fi
+    if ! docker compose version &>/dev/null && ! command -v docker-compose &>/dev/null; then need_fallback=1; fi
+
+    if [ "$need_fallback" -eq 1 ]; then
+        log_info "系统仓库未能成功安装所有 Docker 组件，尝试添加 Docker CE 官方仓库..."
         if is_rhel_like && add_docker_ce_repo; then
             log_info "从 Docker CE 仓库安装 docker-ce..."
             pkg_install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin || {
