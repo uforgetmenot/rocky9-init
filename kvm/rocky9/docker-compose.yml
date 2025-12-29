@@ -1,0 +1,25 @@
+services:
+  kvm:
+    container_name: rocky9-init
+    image: ${KVM_IMAGE:-registry.seadee.com.cn:5000/rocky9-kvm:latest}
+    # build: .
+    devices:
+      - /dev/kvm:/dev/kvm
+    volumes:
+      - ${KVM_DISK_IMAGE:-./rocky9.qcow2}:${KVM_DISK_MOUNT:-/var/lib/libvirt/images/rocky9.qcow2}
+    environment:
+      LIBVIRT_DEFAULT_URI: qemu:///system
+      SPICE_PORT: 5900
+      MAC_ADDRESS: 52:54:00:12:34:56
+    ports:
+      - "6000:5900"
+      - "6001:3389"
+      - "6002:5901"
+      - "6003:2222"
+    tty: true
+    networks:
+      - virtualink
+
+networks:
+  virtualink:
+    external: true
