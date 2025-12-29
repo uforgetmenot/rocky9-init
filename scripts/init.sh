@@ -243,8 +243,8 @@ setup_repositories() {
                 -e 's/^[[:space:]]*metalink=/#metalink=/g' \
                 -e 's/^[[:space:]]*mirrorlist=/#mirrorlist=/g' \
                 -e 's/^[[:space:]]*#baseurl=/baseurl=/g' \
-                -e "s#https\\?://dl\\.rockylinux\\.org/\\$contentdir#${mirror}#g" \
-                -e "s#https\\?://download\\.rockylinux\\.org/\\$contentdir#${mirror}#g" \
+                -e 's#https\?://dl\.rockylinux\.org/\$contentdir#'"${mirror}"'#g' \
+                -e 's#https\?://download\.rockylinux\.org/\$contentdir#'"${mirror}"'#g' \
                 "$repo_file" || true
             changed=true
         fi
